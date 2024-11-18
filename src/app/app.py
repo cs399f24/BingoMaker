@@ -1,20 +1,16 @@
-import random
+import json
 
 import requests
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
-from data.file import FileTilePoolDB
-from data.persistence import TilePoolDB, tile_to_dict
+from data.disk_reader import read_text
+from data.serialization import BoardEncoder
 from game.game import Board
-
-from . import tilepools
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
-
-    app.config["DB"] = FileTilePoolDB("tiles")
 
     @app.route("/")
     def index():
