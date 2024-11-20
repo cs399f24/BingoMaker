@@ -3,7 +3,7 @@ import io
 from PIL import Image
 
 
-def resize_image(image_path, width: int=128 , height: int=128):
+def resize_image(fp, width: int = 128, height: int = 128):
     """
     Resize the image to the specified width and height.
     :param width: Target width of the image.
@@ -12,22 +12,21 @@ def resize_image(image_path, width: int=128 , height: int=128):
     """
     if width <= 0 or height <= 0:
         raise ValueError("Width and height must be positive integers.")
-    #if image isn't square raise a warning and resize to square
-    image = Image.open(image_path)
+    # if image isn't square raise a warning and resize to square
+    image = Image.open(fp)
     if image.size[0] != image.size[1]:
         print("Warning: Image is not square. Resizing to square.")
 
     return image.resize((width, height))
 
-####################################################################################################
 
-def process_gif(gif_path):
+def process_gif(fp) -> list[Image.Image]:
     """
     Process the GIF to extract all frames as RGBA images.
     :return: List of Image objects representing each frame.
     """
-    gif = Image.open(gif_path)
-    frames = []  # List to store all processed frames
+    gif = Image.open(fp)
+    frames = []
     palette = gif.getpalette()  # Get the palette for the GIF if available
 
     try:
@@ -36,11 +35,11 @@ def process_gif(gif_path):
             new_frame = gif.copy()
 
             # Apply the palette if the frame is in 'P' mode
-            if new_frame.mode == 'P' and palette:
+            if new_frame.mode == "P" and palette:
                 new_frame.putpalette(palette)
 
             # Convert the frame to RGBA for consistent processing
-            processed_frame = new_frame.convert('RGBA')
+            processed_frame = new_frame.convert("RGBA")
             frames.append(processed_frame)
 
             # Move to the next frame
@@ -51,7 +50,10 @@ def process_gif(gif_path):
 
     return frames
 
-def resize_frames(self, frames, width: int=128, height: int=128):
+
+def resize_frames(
+    frames: list[Image.Image], width: int = 128, height: int = 128
+) -> list[Image.Image]:
     """
     Resize the list of frames to the specified width and height.
     :param frames: List of Image objects representing each frame.
@@ -63,18 +65,24 @@ def resize_frames(self, frames, width: int=128, height: int=128):
 
     for frame in frames:
         # High-quality resizing
-        resized_frame = frame.resize((width, height), Image.Resampling.LANCZOS) 
+        resized_frame = frame.resize((width, height), Image.Resampling.LANCZOS)
         resized_frames.append(resized_frame)
 
     return resized_frames
-    
 
-def combine_frames(frames):
+
+def combine_frames(frames: list[Image.Image]):
     """
     Combine the list of frames into a single GIF.
     :param frames: List of Image objects representing each frame.
     :fp : arbitrary file object
     """
     buffer = io.BytesIO()
-    frames[0].save(buffer, save_all=True, append_images=frames[1:], loop=0) 
+    frames[0].save(buffer, "GIF", save_all=True, append_images=frames[1:], loop=0)
     return buffer
+
+
+def resize_gif(fp, width: int = 128, height: int = 128):
+    frames = process_gif(fp)
+    resized_frames = resize_frames(frames, width, height)
+    return combine_frames(resized_frames)
