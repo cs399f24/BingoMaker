@@ -1,6 +1,6 @@
 import random
 
-from flask import Flask, current_app, render_template, request
+from flask import Flask, jsonify, render_template, request
 
 from data.file import FileTilePoolDB
 from data.persistence import TilePoolDB, tile_to_dict
@@ -17,33 +17,50 @@ def create_app() -> Flask:
     @app.route("/")
     def index():
         return render_template("index.html")
+    
+    @app.route("/tilesets")
+    def tilesets():
+        return render_template("tilesets.html")
+    
 
-    app.register_blueprint(tilepools.bp)
 
-    @app.route("/bingocard/<tilepoolId>")
-    def generate_card(tilepoolId: str):
+    @app.route("/api/v1/bingocard/<tilesetId>")
+    def generate_card(tilesetId):
+        size = request.args.get("size", 5, type=int)
+        board = Board(
+            read_text("nouns"), size=size, free_square=False, seed=int(tilesetId)
+        )
+        board.id = str(tilesetId)
+        return jsonify(json.loads(json.dumps(board, cls=BoardEncoder)))
+
+    @app.route("/api/v1/tilepoolId")
+    def generate_tilepool_id():
         try:
-            size = int(request.args.get("size", 5))
+            size = request.args.get("size", 5, type=int)
             seed = int(request.args.get("seed", random.randint(0, 1 << 16)))
-        except (ValueError, TypeError):
+        except ValueError:
             return "Invalid input or request parameters", 400
 
         db = current_app.config["DB"]
         if not isinstance(db, TilePoolDB):
             return "internal server error", 500
 
+        tilepoolId = request.args.get("tilepoolId")
         if (result := db.get_tile_pool(tilepoolId)) is None:
             return "Tile pool not found", 404
 
         pool = result["tiles"]
 
-        # excluded_tags = request.args.get("excluded_tags")
         board = Board(pool, size=size, free_square=pool.free is not None, seed=seed)
         board.id = str(seed)
-        return {
+
+        return jsonify({
             "id": board.id,
             "size": board.size,
             "grid": [tile_to_dict(tile) for row in board.board for tile in row],
-        }
+    })
 
+    
+    
+        
     return app
