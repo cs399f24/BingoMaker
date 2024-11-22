@@ -1,23 +1,21 @@
+// script.js
+
 let savedCardsModal;
-let createCardModal;
+let createTilesetModal;
+let editModal;
 
 (function () {
   // Wait for the DOM to fully load before running scripts
-  document.addEventListener('DOMContentLoaded', () => {
-    initPage();
-
-    // Event listener for the "Create New Bingo Card" button
-    const createBtn = document.getElementById('create-btn');
-  if (createBtn) {
-    createBtn.addEventListener('click', () => {
-      saveTilePool(); // Call the function to save the tile pool
-      createCardModal.show();
-    });
-  }
+  document.addEventListener('DOMContentLoaded', async () => {
+    await initPage();
 
     // Initialize Bootstrap modals
+    const createTilesetModalElement = document.getElementById('createTilesetModal');
+    if (createTilesetModalElement) {
+      createTilesetModal = new bootstrap.Modal(createTilesetModalElement);
+    }
+
     const editModalElement = document.getElementById('modal');
-    let editModal;
     if (editModalElement) {
       editModal = new bootstrap.Modal(editModalElement);
     }
@@ -26,22 +24,83 @@ let createCardModal;
     if (savedCardsModalElement) {
       savedCardsModal = new bootstrap.Modal(savedCardsModalElement);
     }
-
-    const createCardModalElement = document.getElementById('create-card-modal');
-    if (createCardModalElement) {
-      createCardModal = new bootstrap.Modal(createCardModalElement);
-    } 
-
-    // Event listener for the "Create" button in the Create Card Modal
-    const createCardBtn = document.getElementById('create-card-btn');
-      if (createCardBtn) {
-      createCardBtn.addEventListener('click', () => {
+    const createBtn = document.getElementById('create-btn');
+    if (createBtn) {
+      createBtn.addEventListener('click', () => {
+        editModal.show();
+      });
+    }
+    const editBtn = document.getElementById('edit-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        editModal.show();
+      });
+    }
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
         saveWords();
-        createCardModal.hide();
+        editModal.hide();
+      });
+    }
+    const createTilesetForm = document.getElementById('createTilesetForm');
+    if (createTilesetForm) {
+      createTilesetForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const tilesetName = document.getElementById('tileset-name').value.trim();
+        const tilesetTiles = document.getElementById('tileset-tiles').value.trim();
+
+        if (!tilesetName || !tilesetTiles) {
+          alert('Please provide a name and tiles for the tile pool.');
+          return;
+        }
+
+        const tiles = tilesetTiles
+          .split('\n')
+          .map(tile => tile.trim())
+          .filter(tile => tile !== '');
+
+        if (tiles.length < 24) {
+          alert('Please enter at least 24 tiles.');
+          return;
+        }
+
+        const newTilePool = {
+          name: tilesetName,
+          tiles: tiles.map(tile => ({ type: 'text', content: tile, tags: [] })),
+          free_tile: {
+            type: 'text',
+            content: 'FREE',
+            tags: []
+          }
+        };
+        await createNewTileset(newTilePool);
+        createTilesetModal.hide();
       });
     }
 
-    // Attach event listener to the bingo board using event delegation
+    const printBtn = document.getElementById('print-btn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    const viewSavedBtn = document.getElementById('view-saved-btn');
+    if (viewSavedBtn) {
+      viewSavedBtn.addEventListener('click', () => {
+        displaySavedCards(); 
+        savedCardsModal.show();
+      });
+    }
+    const saveCardBtn = document.getElementById('save-card-btn');
+    if (saveCardBtn) {
+      saveCardBtn.addEventListener('click', () => {
+        saveCurrentBingoCard();
+      });
+    }
+
     const bingoBoard = document.getElementById('bingo-board');
     if (bingoBoard) {
       bingoBoard.addEventListener('click', (event) => {
@@ -52,91 +111,49 @@ let createCardModal;
         }
       });
     }
-
-    // Event listener for the "Edit Words" button
-    const editBtn = document.getElementById('edit-btn');
-    if (editBtn && editModal) {
-      editBtn.addEventListener('click', () => {
-        editModal.show();
-      });
-    }
-
-    // Event listener for the "Save" button in the Edit Modal
-    const saveBtn = document.getElementById('save-btn');
-    if (saveBtn && editModal) {
-      saveBtn.addEventListener('click', () => {
-        saveWords();
-        editModal.hide();
-      });
-    }
-
-    // Event listener for the "Print" button
-    const printBtn = document.getElementById('print-btn');
-    if (printBtn) {
-      printBtn.addEventListener('click', () => {
-        window.print();
-      });
-    }
-
-    // Event listener for the "View Saved Cards" button
-    const viewSavedBtn = document.getElementById('view-saved-btn');
-    if (viewSavedBtn && savedCardsModal) {
-      viewSavedBtn.addEventListener('click', () => {
-        displaySavedCards(); // Function to populate the saved cards list
-        savedCardsModal.show();
-      });
-    }
-
-    // Event listener for the "Save Bingo Card" button
-    const saveCardBtn = document.getElementById('save-card-btn');
-    if (saveCardBtn) {
-      saveCardBtn.addEventListener('click', () => {
-        saveCurrentBingoCard();
-      });
-    }
   });
 
-  // Function to generate the bingo card
-  function generateBingoCard(input) {
+  function generateBingoCard(data) {
     const bingoBoard = document.getElementById('bingo-board');
     bingoBoard.innerHTML = ''; // Clear previous cells
 
     let grid = [];
 
-    if (Array.isArray(input)) {
-      // Input is an array of words
-      let words = input.slice(0, 24); // Get the first 24 words
-      words.splice(12, 0, 'FREE'); // Insert 'FREE' at the center
-      grid = words.map((word) => ({ content: word }));
-    } else if (input && Array.isArray(input.grid)) {
-      // Input is an object with a grid property from the server
-      grid = input.grid;
+    if (Array.isArray(data)) {
+        // Input is an array of words
+        let words = data.slice(0, 24); 
+        words.splice(12, 0, 'FREE'); // Insert 'FREE' at the center
+        grid = words.map((word) => ({ content: word }));
+    } else if (data && Array.isArray(data.tiles)) {
+        grid = data.tiles;
+    } else if (data && Array.isArray(data.grid)) {
+        grid = data.grid;
     } else {
-      console.error('Invalid input for generateBingoCard');
-      return;
+        console.error('Invalid input for generateBingoCard');
+        return;
     }
 
     // Generate the bingo board
     grid.forEach((tile, index) => {
-      const cell = document.createElement('div');
-      cell.className = 'col bingo-cell';
-      cell.textContent = tile.content || tile; // Handle both object and string types
+        const cell = document.createElement('div');
+        cell.className = 'col bingo-cell';
+        cell.textContent = tile.content || tile; // Handle both object and string types
 
-      if (tile.content === 'FREE' || tile === 'FREE') {
-        cell.classList.add('free-cell', 'marked');
-      }
+        if (tile.content === 'FREE' || tile === 'FREE') {
+            cell.classList.add('free-cell', 'marked');
+        }
 
-      bingoBoard.appendChild(cell);
+        bingoBoard.appendChild(cell);
     });
 
     showBingoSection();
-  }
+}
 
-   // Function to save words from the modal input and update the bingo card
+
+  // Function to save words from the modal input and update the bingo card
   function saveWords() {
     const inputText = document.getElementById('create-card-input').value.trim();
-      if (inputText !== '') {
-    // Split input by new lines and trim each word
+    if (inputText !== '') {
       const words = inputText
         .split('\n')
         .map((word) => word.trim())
@@ -145,13 +162,13 @@ let createCardModal;
       if (words.length < 24) {
         alert('Please enter at least 24 words.');
         return;
-    }
+      }
 
-     generateBingoCard(words);
+      generateBingoCard(words);
     } else {
       // If input is empty, fetch a random bingo card
       fetchBingoCard();
-    } 
+    }
     document.getElementById('create-card-input').value = ''; // Clear the input
   }
 
@@ -167,7 +184,6 @@ let createCardModal;
     }
   }
 
-  // Function to save the current bingo card
   function saveCurrentBingoCard() {
     const bingoCells = document.querySelectorAll('.bingo-cell');
     const cardData = Array.from(bingoCells, (cell) => cell.textContent);
@@ -188,7 +204,6 @@ let createCardModal;
     alert('Bingo card saved successfully!');
   }
 
-  // Function to display saved bingo cards in the modal
   function displaySavedCards() {
     const savedCardsList = document.getElementById('saved-cards-list');
     if (!savedCardsList) return;
@@ -215,14 +230,12 @@ let createCardModal;
     });
   }
 
-  // Function to load a bingo card
   function loadBingoCard(cardData) {
     const grid = cardData.map((content) => ({ content }));
-    generateBingoCard(grid); // Generate the bingo board with the loaded card data
+    generateBingoCard({ tiles: grid }); // Generate the bingo board with the loaded card data
   }
 
-  // Initialize the page
-  function initPage() {
+  async function initPage() {
     // Show the welcome section and hide the bingo section
     const welcomeSection = document.getElementById('welcome-section');
     if (welcomeSection) {
@@ -232,15 +245,33 @@ let createCardModal;
     if (bingoSection) {
       bingoSection.style.display = 'none';
     }
+
+    // Fetch list of tile pools to get a default tilepoolId
+    let defaultTilepoolId = 'nouns'; // default to 'nouns'
+
+    try {
+      const response = await fetch('/tilepools');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tile pools');
+      }
+      const tilepools = await response.json();
+      if (tilepools.length > 0) {
+        defaultTilepoolId = tilepools[0].id;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      // Use default 'nouns' if fetching tile pools fails
+    }
+
+    // Store defaultTilepoolId for use in fetchBingoCard
+    window.defaultTilepoolId = defaultTilepoolId;
   }
 
-  // Function to check for a bingo win
   function checkBingoWin() {
     const bingoCells = document.querySelectorAll('.bingo-cell');
     const size = 5; // Assuming a 5x5 bingo grid
     let cellArray = [];
 
-    // Convert NodeList to a 2D array representing the bingo grid
     for (let i = 0; i < size; i++) {
       cellArray[i] = [];
       for (let j = 0; j < size; j++) {
@@ -248,30 +279,23 @@ let createCardModal;
         cellArray[i][j] = bingoCells[index].classList.contains('marked');
       }
     }
-
-    // Check rows and columns
     for (let i = 0; i < size; i++) {
       let rowWin = true;
       let colWin = true;
 
       for (let j = 0; j < size; j++) {
-        // Check row
         if (!cellArray[i][j]) {
           rowWin = false;
         }
-        // Check column
         if (!cellArray[j][i]) {
           colWin = false;
         }
       }
-
       if (rowWin || colWin) {
         displayWinMessage();
         return;
       }
     }
-
-    // Check diagonals
     let diagWin1 = true;
     let diagWin2 = true;
     for (let i = 0; i < size; i++) {
@@ -293,15 +317,15 @@ let createCardModal;
     alert('BINGO! You have a winning card!');
   }
 
-  // Function to fetch a random bingo card from the server
-  async function fetchBingoCard(tilepoolId = 'nouns') {
-    // Use the provided tilepoolId or default to 'nouns'
+  async function fetchBingoCard(tilepoolId) {
+    // Use the provided tilepoolId or default to window.defaultTilepoolId
+    tilepoolId = tilepoolId || window.defaultTilepoolId || 'nouns';
     const size = 5; // Size of the bingo card
     const seed = Math.floor(Math.random() * 10000); // Random seed
-  
+
     try {
       const response = await fetch(
-        `/api/v1/bingocard/${tilepoolId}?size=${size}&seed=${seed}`
+        `/bingocard/${tilepoolId}?size=${size}&seed=${seed}`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch bingo card');
@@ -313,62 +337,36 @@ let createCardModal;
       alert('An error occurred while fetching the bingo card. Please try again later.');
     }
   }
-  
 
-  async function saveTilePool() {
-    const inputText = document.getElementById('create-card-input').value.trim();
-    if (inputText !== '') {
-      const words = inputText
-        .split('\n')
-        .map((word) => word.trim())
-        .filter((word) => word !== '');
+  // Function to create a new tile pool via the API
+  async function createNewTileset(tileset) {
+    //console log to inspect the data
+    console.log('Sending new tile pool:', tileset);
   
-      if (words.length < 24) {
-        alert('Please enter at least 24 words.');
-        return;
-      }
-  
-      // Construct the tiles data
-      const tiles = words.map((word) => {
-        return {
-          content: word,
-          tags: [], // tags if necessary
-          image: null // URL if necessary
-        };
+    try {
+      const response = await fetch('/tilepools', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(tileset)
       });
   
-      // Prepare the data to be sent to the server
-      const data = {
-        name: 'Custom Tile Pool', // we can add a name input field in the modal if needed
-        tiles: tiles,
-      };
-  
-      try {
-        const response = await fetch('/tilepools', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-  
-        if (!response.ok) {
-          throw new Error(`Failed to create tile pool: ${response.statusText}`);
-        }
-  
-        const result = await response.json();
-        const tilepoolId = result.id;
-        // Generate the bingo card using the new tile pool
-        fetchBingoCard(tilepoolId);
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while creating the tile pool. Please try again later.');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create tile pool: ${response.status} ${errorText}`);
       }
-    } else {
-      // If input is empty, fetch a random bingo card
-      fetchBingoCard();
-    }
-    document.getElementById('create-card-input').value = ''; // Clear the input
-  }
   
+      const data = await response.json();
+      alert('Tile pool created successfully!');
+      console.log('Created Tile Pool:', data);
+  
+      // generate a bingo card using the new tile pool
+      fetchBingoCard(data.id);
+    } catch (error) {
+      console.error('Error:', error);
+      alert(`Error creating tile pool: ${error.message}`);
+    }
+  }
+
 })();

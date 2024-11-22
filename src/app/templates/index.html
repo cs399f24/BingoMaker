@@ -25,26 +25,37 @@
     <div id="welcome-section" class="text-center my-5">
         <h2>Welcome to the Bingo Card Generator!</h2>
         <p>Create your custom bingo cards easily.</p>
-        <button id="create-btn" class="btn btn-primary">Create New Bingo Card</button>
+        <!-- Added Button to Open the Create Tile Pool Modal -->
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createTilesetModal">Create New Tile Pool</button>
     </div>
 
-    <!-- Create New Bingo Card Modal -->
-    <div id="create-card-modal" class="modal fade" tabindex="-1" aria-labelledby="createCardModalLabel" aria-hidden="true">
+    <!-- Create New Tile Pool Modal -->
+    <div class="modal fade" id="createTilesetModal" tabindex="-1" aria-labelledby="createTilesetModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
-        <!-- Modal Header -->
-          <div class="modal-header">
-          <h5 class="modal-title" id="createCardModalLabel">Create New Bingo Card</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <!-- Modal Body -->
-        <div class="modal-body">
-          <textarea id="create-card-input" class="form-control" rows="8" placeholder="Enter words separated by new lines..."></textarea>
-        </div>
-        <!-- Modal Footer -->
-          <div class="modal-footer">
-            <button id="create-card-btn" class="btn btn-primary">Create</button>
-          </div>
+          <form id="createTilesetForm">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h5 class="modal-title" id="createTilesetModalLabel">Create New Tile Pool</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="tileset-name" class="form-label">Tile Pool Name</label>
+                <input type="text" class="form-control" id="tileset-name" required placeholder="Enter tile pool name">
+              </div>
+              <div class="mb-3">
+                <label for="tileset-tiles" class="form-label">Tiles (one per line)</label>
+                <textarea class="form-control" id="tileset-tiles" rows="10" required placeholder="Enter tiles separated by new lines..."></textarea>
+              </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="create-tileset-btn">Create Tile Pool</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -83,7 +94,7 @@
             </div>
             <!-- Modal Body -->
             <div class="modal-body">
-              <textarea id="modal-input" class="form-control" rows="8" placeholder="Enter words separated by new lines..."></textarea>
+              <textarea id="create-card-input" class="form-control" rows="8" placeholder="Enter words separated by new lines..."></textarea>
             </div>
             <!-- Modal Footer -->
             <div class="modal-footer">
@@ -92,31 +103,30 @@
           </div>
         </div>
     </div>
-        <!-- Saved Cards Modal -->
-  <div id="saved-cards-modal" class="modal fade" tabindex="-1" aria-labelledby="savedCardsModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <h5 class="modal-title" id="savedCardsModalLabel">Saved Bingo Cards</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <!-- Modal Body -->
-        <div class="modal-body">
-          <ul id="saved-cards-list" class="list-group">
-            <!-- Saved cards will be listed here -->
-          </ul>
-        </div>
-        <!-- Modal Footer -->
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+    <!-- Saved Cards Modal -->
+    <div id="saved-cards-modal" class="modal fade" tabindex="-1" aria-labelledby="savedCardsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h5 class="modal-title" id="savedCardsModalLabel">Saved Bingo Cards</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <!-- Modal Body -->
+          <div class="modal-body">
+            <ul id="saved-cards-list" class="list-group">
+              <!-- Saved cards will be listed here -->
+            </ul>
+          </div>
+          <!-- Modal Footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-
-    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
