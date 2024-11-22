@@ -3,6 +3,8 @@
 let savedCardsModal;
 let createTilesetModal;
 let editModal;
+let currentTilePoolName = null; 
+
 
 (function () {
   // Wait for the DOM to fully load before running scripts
@@ -158,12 +160,13 @@ let editModal;
         .split('\n')
         .map((word) => word.trim())
         .filter((word) => word !== '');
-
+  
       if (words.length < 24) {
         alert('Please enter at least 24 words.');
         return;
       }
-
+  
+      currentTilePoolName = null; // Clear tile pool name
       generateBingoCard(words);
     } else {
       // If input is empty, fetch a random bingo card
@@ -171,6 +174,7 @@ let editModal;
     }
     document.getElementById('create-card-input').value = ''; // Clear the input
   }
+  
 
   // Function to show the bingo section and hide the welcome section
   function showBingoSection() {
@@ -187,38 +191,52 @@ let editModal;
   function saveCurrentBingoCard() {
     const bingoCells = document.querySelectorAll('.bingo-cell');
     const cardData = Array.from(bingoCells, (cell) => cell.textContent);
-
+  
+    // Prompt the user for a card name
+    let cardName = prompt('Enter a name for this bingo card:');
+    if (!cardName) {
+      // If the user cancels or doesn't enter a name, use a default name
+      cardName = 'Untitled Card';
+    }
+  
     // Get existing saved cards from localStorage
     let savedCards = JSON.parse(localStorage.getItem('savedBingoCards')) || [];
-
+  
     // Implement a limit on the number of saved cards
     const maxCards = 50;
     if (savedCards.length >= maxCards) {
       savedCards.shift(); // Remove the oldest card
     }
-
-    // Save the new card
-    savedCards.push(cardData);
+  
+    // Save the new card with its name
+    savedCards.push({
+      name: cardName,
+      data: cardData
+    });
     localStorage.setItem('savedBingoCards', JSON.stringify(savedCards));
-
-    alert('Bingo card saved successfully!');
+  
+    alert(`Bingo card "${cardName}" saved successfully!`);
   }
+  
+  
 
   function displaySavedCards() {
     const savedCardsList = document.getElementById('saved-cards-list');
     if (!savedCardsList) return;
     savedCardsList.innerHTML = ''; // Clear previous list
-
+  
     let savedCards = JSON.parse(localStorage.getItem('savedBingoCards')) || [];
-
+  
     if (savedCards.length === 0) {
       savedCardsList.innerHTML = '<li class="list-group-item">No saved bingo cards.</li>';
       return;
     }
-
+  
     savedCards.forEach((card, index) => {
+      const cardName = card.name || `Bingo Card ${index + 1}`; // Use card name or default
+  
       const listItem = document.createElement('li');
-      listItem.textContent = `Bingo Card ${index + 1}`;
+      listItem.textContent = cardName;
       listItem.classList.add('list-group-item');
       listItem.style.cursor = 'pointer';
       listItem.addEventListener('click', () => {
@@ -229,11 +247,17 @@ let editModal;
       savedCardsList.appendChild(listItem);
     });
   }
+  
 
-  function loadBingoCard(cardData) {
+  function loadBingoCard(card) {
+    const cardData = card.data || card; // Handle both new and old formats
     const grid = cardData.map((content) => ({ content }));
     generateBingoCard({ tiles: grid }); // Generate the bingo board with the loaded card data
+  
+    // Set currentTilePoolName if available
+    currentTilePoolName = card.name || null;
   }
+  
 
   async function initPage() {
     // Show the welcome section and hide the bingo section
@@ -245,10 +269,12 @@ let editModal;
     if (bingoSection) {
       bingoSection.style.display = 'none';
     }
-
+  
+    currentTilePoolName = null; // Clear the tile pool name
+  
     // Fetch list of tile pools to get a default tilepoolId
     let defaultTilepoolId = 'nouns'; // default to 'nouns'
-
+  
     try {
       const response = await fetch('/tilepools');
       if (!response.ok) {
@@ -262,7 +288,7 @@ let editModal;
       console.error('Error:', error);
       // Use default 'nouns' if fetching tile pools fails
     }
-
+  
     // Store defaultTilepoolId for use in fetchBingoCard
     window.defaultTilepoolId = defaultTilepoolId;
   }
@@ -318,29 +344,36 @@ let editModal;
   }
 
   async function fetchBingoCard(tilepoolId) {
-    // Use the provided tilepoolId or default to window.defaultTilepoolId
     tilepoolId = tilepoolId || window.defaultTilepoolId || 'nouns';
-    const size = 5; // Size of the bingo card
-    const seed = Math.floor(Math.random() * 10000); // Random seed
-
+    const size = 5;
+    const seed = Math.floor(Math.random() * 10000);
+  
     try {
-      const response = await fetch(
-        `/bingocard/${tilepoolId}?size=${size}&seed=${seed}`
-      );
+      // Fetch the tile pool to get its name
+      const tilePoolResponse = await fetch(`/tilepools/${tilepoolId}`);
+      if (!tilePoolResponse.ok) {
+        throw new Error('Failed to fetch tile pool');
+      }
+      const tilePoolData = await tilePoolResponse.json();
+      currentTilePoolName = tilePoolData.name; // Store the tile pool name
+  
+      // Fetch the bingo card
+      const response = await fetch(`/bingocard/${tilepoolId}?size=${size}&seed=${seed}`);
       if (!response.ok) {
         throw new Error('Failed to fetch bingo card');
       }
       const data = await response.json();
-      generateBingoCard(data); // Pass the entire data object
+      generateBingoCard(data);
     } catch (error) {
       console.error('Error:', error);
       alert('An error occurred while fetching the bingo card. Please try again later.');
     }
   }
+  
 
   // Function to create a new tile pool via the API
   async function createNewTileset(tileset) {
-    //console log to inspect the data
+    // console log to inspect the data
     console.log('Sending new tile pool:', tileset);
   
     try {
@@ -361,12 +394,15 @@ let editModal;
       alert('Tile pool created successfully!');
       console.log('Created Tile Pool:', data);
   
-      // generate a bingo card using the new tile pool
+      currentTilePoolName = data.name; // Set the current tile pool name
+  
+      // Generate a bingo card using the new tile pool
       fetchBingoCard(data.id);
     } catch (error) {
       console.error('Error:', error);
       alert(`Error creating tile pool: ${error.message}`);
     }
   }
+  
 
 })();
