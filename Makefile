@@ -16,7 +16,7 @@ format:
 	uv run ruff format
 
 server:
-	uv run --directory=src __init__.py
+	uv run src/__init__.py
 
 deploy:
 	uv run --no-dev --directory=src gunicorn \
@@ -27,9 +27,9 @@ deploy:
 	"app:create_app()"
 
 test:
-	@uv run pytest
+	@uv run pytest -m "not localstack"
 
-test-full:
+test-all:
 	@docker compose up -d
 	@uv run pytest
 	@docker compose down
@@ -38,12 +38,14 @@ clean:
 	uv run ruff clean
 
 info:
-	@echo "Targets"
-	@echo "all      - lint the project"
-	@echo "lint     - lint the project"
-	@echo "lint-fix - lint and fix the project"
-	@echo "format   - format the project"
-	@echo "test     - run tests"
-	@echo "clean    - clear caches for project tools"
-	@echo "server   - run a a development server"
-	@echo "deploy   - deploy application usin gunicorn"
+	@printf "%s\n" \
+		"Targets:" \
+		"all      - lint the project and run some tests\n" \
+		"lint     - lint the project" \
+		"lint-fix - lint and fix the project" \
+		"format   - format the project" \
+		"test     - run tests which to not require localstack" \
+		"test-all - run all tests, starting a localstack" \
+		"clean    - clear caches for project tools" \
+		"server   - run a a development server" \
+		"deploy   - deploy application using gunicorn"
