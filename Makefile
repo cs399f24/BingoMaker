@@ -18,6 +18,15 @@ format:
 server:
 	uv run src/__init__.py
 
+deploy/.terraform:
+	@terraform -chdir=deploy init
+
+remote-deploy: deploy/.terraform
+	@terraform -chdir=deploy apply -auto-approve
+
+remote-destroy: deploy/.terraform
+	@terraform -chdir=deploy destroy -auto-approve
+
 deploy:
 	uv run --no-dev --directory=src gunicorn \
 	--daemon --bind $(DEPLOY_BIND) \
@@ -48,4 +57,6 @@ info:
 		"test-all - run all tests, starting a localstack" \
 		"clean    - clear caches for project tools" \
 		"server   - run a a development server" \
-		"deploy   - deploy application using gunicorn"
+		"deploy   - deploy application using gunicorn" \
+		"remote-deploy - deploy application using terraform" \
+		"remote-destroy - destroy application using terraform"
