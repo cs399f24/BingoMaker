@@ -5,25 +5,32 @@ from flask import Flask, current_app, render_template, request
 from data.persistence import TilePoolDB, tile_to_dict
 from game.game import Board
 
-from . import image_routes, tilepool_routes
-from .config import Config, LocalDiskConfig
+from . import auth_routes, image_routes, tilepool_routes
+from .config import CloudAWSConfig, Config, LocalDiskConfig
 
 
-def create_app(config: type[Config] = LocalDiskConfig) -> Flask:
+def aws_create_app() -> Flask:
+    return create_app(CloudAWSConfig)
+
+
+def create_app(config_class: type[Config] = LocalDiskConfig, TESTING: bool = False) -> Flask:
     app = Flask(__name__)
 
-    app.config.from_object(config)
+    app.config.from_object(config_class())
+    app.config["TESTING"] = TESTING
+    auth_routes.cognito_app(app)
 
     @app.route("/")
     def index():
         return render_template("index.html")
-    
+
     @app.route("/tilesets")
     def tilesets():
         return render_template("tilesets.html")
 
     app.register_blueprint(tilepool_routes.bp)
     app.register_blueprint(image_routes.bp)
+    app.register_blueprint(auth_routes.bp)
 
     @app.route("/bingocard/<tilepoolId>")
     def generate_card(tilepoolId: str):
