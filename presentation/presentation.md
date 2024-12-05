@@ -59,6 +59,12 @@ Derek
 
 ## UV
 
+![](uv_logo.svg){ width=200px }
+
+. . .
+
+![Speed Comparisons for UV](uv_speeds.svg)
+
 ::: notes
 JP
 
@@ -71,6 +77,10 @@ JP
 
 ## Lambda Layers
 
+. . .
+
+![](https://docs.aws.amazon.com/images/lambda/latest/dg/images/lambda-layers-diagram.png){ height=565px }
+
 ::: notes
 JP
 
@@ -79,6 +89,18 @@ JP
 :::
 
 ## Localstack
+
+<div class="columns" style="align-items: center;">
+::::: {.column width=45%}
+![](local_stack.png)
+:::::
+::::: {.column width=5%}
+<h3><b>+</b></h3>
+::::
+::::: {.column width=45%}
+![](https://logos-world.net/wp-content/uploads/2021/02/Docker-Logo.png)
+:::::
+</div>
 
 ::: notes
 JP
@@ -107,6 +129,22 @@ Owen
 # Automation/Scripting
 
 ## Makefiles
+
+. . .
+
+```makefile
+lint:
+    uv run ruff check
+
+test:
+    uv run pytest
+
+remote-deploy: deploy/.terraform
+    terraform -chdir=deploy apply -auto-approve
+
+deploy/.terraform:
+    terraform -chdir=deploy init
+```
 
 ::: notes
 JP
