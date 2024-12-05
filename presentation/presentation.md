@@ -27,16 +27,23 @@ Yousuf
 * Share bingo cards
 
 ::: notes
-Anyone
+Yousuf
 
 :::
 
 # System Architecture
 
-![](TilePoolPage.png)
+## Monolithic
 
 ::: notes
 Yousuf
+:::
+
+## Distributed
+
+::: notes
+Yousuf
+
 :::
 
 # Demo
@@ -62,6 +69,15 @@ JP
 :::
 
 
+## Lambda Layers
+
+::: notes
+JP
+
+* reuse shared dependencies across lambdas
+* supports versioning
+:::
+
 ## Localstack
 
 ::: notes
@@ -70,16 +86,7 @@ JP
 * locally run some aws service
 * does not support all aws services
     * some require a premium subscriptions
-    * (segue into lambda layers)
-:::
-
-## Lambda Layers
-
-::: notes
-JP
-
-* reuse shared dependencies across lambdas
-* supports versioning
+    * (segue into terraform)
 :::
 
 ## Terraform
@@ -99,14 +106,31 @@ Owen
 
 # Automation/Scripting
 
-<!-- JP: Idk where but we should mention how all our commands are tucked away in a makefile -->
-
-## Scripted Lambda Layers
+## Makefiles
 
 ::: notes
 JP
 
-* makefile stuff
+* used a makefile to simplify
+    * zipping lambda layers
+    * local testing
+    * local linting
+* also had targets for
+    * remote distributed deploy
+    * remote distributed destroy using terraform
+    * local monolithic deploy
+:::
+
+## GitHub Actions
+
+<!-- TODO: github logo, green checkmark :) -->
+
+::: notes
+Owen
+
+* automatic linting and testing
+* performed on a push
+* in the future could be used to automate deployment
 :::
 
 ## Automation Terraform
@@ -137,13 +161,24 @@ Everyone
 * JP: **READ THE OFFICIAL DOCS, NOT STACK OVERFLOW**
     * localstack issue
     * boto3 client issue
+* Derek: working while waiting for changes
+* Yousuf: Lab permissions
+    * documentdb
+* Owen: communicating the status of changes
 :::
 
 # Future Work
 
-::: notes
-Derek/?Yousuf
+::: incremental
 
-* cognito?
-* images?
+* Cognito
+* Images in tiles
+
+:::
+
+::: notes
+Yousuf
+
+* Cognito
+* Images
 :::
