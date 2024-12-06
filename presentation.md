@@ -1,24 +1,39 @@
 ---
-title: BingoMaker
+title: "BingoMaker"
 author:
-- Derek
-- JP
-- Owen
-- Yousuf
-date: 12/06/2024
----
-<!-- Show what our project is-->
-# BingoMaker
-
-- Insert image for demo here
+- "JP Appel"
+- "Yousuf Kanan"
+- "Derek Allmon"
+- "Owen Halliday"
 ---
 
-# Slide 2 Title
+# BingoMaker TILES HERE Explain diferent things
+Note that these h eaders will be removd when we get the 
+necessary information to put here, this slide will discuss the below
+## Features
+- Play bingo
+- Create bingo tiles
+- Save bingo cards
+- Print bingo cards
+- Edit bingo cards
+- Share bingo cards
 
-Content for the second slide.
+# System Archectecture Diagram HERE
+Note that these h eaders will be removd when we get the 
+necessary information to put hereE
 
----
+#
+![](TilePoolPage.png)
 
-## Slide 3 Subtitle
 
-Content for the third slide.
+
+
+# Technologies Not Covered in Class
+- UV (Yousuf)
+- localstack (Owen/JP :shrug)
+- terraform (Owen)
+
+
+# Demo HERE
+
+# Future Work (We are presenting early so this might be added somewhere) 
