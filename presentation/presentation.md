@@ -107,22 +107,20 @@ JP
     * (segue into terraform)
 :::
 
-## Terraform
+## 
+![](terraform.png)
 
 ::: notes
 Owen
 
-<!-- JP: this slide should be fairly light, it should be what is terraform not how we use it -->
-<!-- JP: the how we use terraform comes in the next section -->
-
+* open-source infrastructure as code
+* almost 5000 different providers
 * cloud orchestration, similar to cloudformation
 * allows us to almost have single `up`/`down` commands
-    * amplify issue
-<!-- JP: might want to place amplify issue in the automation section -->
 
 :::
 
-# Automation/Scripting
+# Automation and Scripting
 
 ## Makefiles
 
@@ -157,7 +155,14 @@ JP
 
 ## GitHub Actions
 
-<!-- TODO: github logo, green checkmark :) -->
+
+![](github.png)
+<div style="display: flex; justify-content: center; margin: 0;">
+  <p style="display: flex; align-items: center; margin: 0;">
+    <img src="check.png" alt="Check" style="margin-right: 10px; height: 120px;">
+    <b>2 checks passed</b>
+  </p>
+</div>
 
 ::: notes
 Owen
@@ -165,15 +170,38 @@ Owen
 * automatic linting and testing
 * performed on a push
 * in the future could be used to automate deployment
+    * given restrictions of the learner lab, this could not be implemented
 :::
 
-## Automation Terraform
+## Terraform
 
+. . .
+
+```terraform
+resource "aws_dynamodb_table" "bingo_maker" {
+  name         = "BingoMaker"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
+
+
+```
 ::: notes
 Owen
 
-* need to set env vars
-* makes dep tree so services are started in corrected order
+* initially had some scripts using aws cli, hard to maintain for a 1 command deploy
+
+* makes dep tree automatically so services are started in corrected order 
+    * amplify issue 
+
+* here's a snippet, showing how easy it is to create a dynamodb table
+    * has name, hash key, and our attribute
+    * there are more options, but this is all thats required
 :::
 
 
@@ -199,6 +227,8 @@ Everyone
 * Yousuf: Lab permissions
     * documentdb
 * Owen: communicating the status of changes
+    * started having meetings later into the project, we should have had them to begin with
+    * some PRs with unknown status
 :::
 
 # Future Work
