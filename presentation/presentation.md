@@ -7,17 +7,11 @@ author:
 - "Yousuf Kanan"
 ---
 
-# BingoMaker
+# Features
 
 <!-- TODO: BingoMaker Branding -->
 
-::: notes
-Yousuf
-
-* project description
-:::
-
-## Features
+::: incremental
 
 * Play bingo
 * Create bingo tile pools
@@ -25,6 +19,8 @@ Yousuf
 * Print bingo cards
 * Edit bingo cards
 * Share bingo cards
+
+:::
 
 ::: notes
 Yousuf
@@ -55,20 +51,17 @@ Derek
 
 :::
 
-# Technologies Not Covered in Class
+# New Technologies
 
 ## UV
 
 ![](uv_logo.svg){ width=200px }
 
-. . .
-
-![Speed Comparisons for UV](uv_speeds.svg)
-
 ::: notes
 JP
 
 * pip replacement and project manager
+* similar to npm and npx
 * supports the dependency grouping
     * use to install only what is required for lambdas
     * (segue into lambda layers)
@@ -88,14 +81,14 @@ JP
 * supports versioning
 :::
 
-## Localstack
+## 
 
 <div class="columns" style="align-items: center;">
 ::::: {.column width=45%}
 ![](local_stack.png)
 :::::
 ::::: {.column width=5%}
-<h3><b>+</b></h3>
+<b>+</b>
 ::::
 ::::: {.column width=45%}
 ![](https://logos-world.net/wp-content/uploads/2021/02/Docker-Logo.png)
