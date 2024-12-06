@@ -36,7 +36,7 @@ Yousuf
 Yousuf
 
 
-* Amplify: Hosts static frontend assets and integrates with backend services.
+* Amplify: Hosts static frontend assets 
 * API Gateway: Routes client requests to backend Lambda functions.
 * Lambda: Executes backend logic for creating bingo boards and managing data.
 * DynamoDB: Stores game data
@@ -45,8 +45,6 @@ Yousuf
 :::
 
 # Demo
-
-**QRCODE**
 
 ::: notes
 Derek
