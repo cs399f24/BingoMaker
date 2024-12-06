@@ -7,9 +7,9 @@ from flask import Flask
 from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
 
-from src.app import create_app
-from src.data import MemoryTilePoolDB
-from src.data.persistence import (
+from bingomaker.app import create_app
+from bingomaker.data import MemoryTilePoolDB
+from bingomaker.data.persistence import (
     DBResult,
     SortMethod,
     TileDict,
@@ -17,10 +17,10 @@ from src.data.persistence import (
     dict_to_tile,
     tile_to_dict,
 )
-from src.game.game import Tile, TilePool
-from src.images.image_manager import ImageManager
-from src.images.local import LocalImageManager
-from src.images.memory import MemoryReferenceCounts
+from bingomaker.game.game import Tile, TilePool
+from bingomaker.images.image_manager import ImageManager
+from bingomaker.images.local import LocalImageManager
+from bingomaker.images.memory import MemoryReferenceCounts
 
 EXAMPLES: dict[str, DBResult] = {
     "basic": {
@@ -136,8 +136,8 @@ class TestBingoCard:
 
         assert body["id"] == "20"
         assert body["size"] == 5
-        assert len(body["grid"]) == 25
-        assert body["grid"][12]["content"] == "Free"
+        assert len(body["tiles"]) == 25
+        assert body["tiles"][12]["content"] == "Free"
 
 
 class TestGetPool:

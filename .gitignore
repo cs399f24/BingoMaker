@@ -13,3 +13,7 @@ __pycache__
 *.html
 
 .env
+
+# build files
+layers/base_layer
+*.zip

@@ -1,8 +1,12 @@
-.PHONY: all lint lint-fix format test info server deploy
+.PHONY: all lint lint-fix format test info server deploy lambdas
 
+PYTHON_VERSION=3.13
 DEPLOY_NAME := BingoMaker
 DEPLOY_WORKERS := 3
 DEPLOY_BIND := 0.0.0.0:80
+
+BASE_LAYER_DIR := layers/base_layer
+HELPER_LAYER_DIR := layers/helper_layer
 
 all: lint test
 
@@ -14,6 +18,7 @@ lint-fix:
 
 format:
 	uv run ruff format
+	terraform -chdir=deploy fmt
 
 server:
 	uv run src/__init__.py
@@ -21,14 +26,14 @@ server:
 deploy/.terraform:
 	@terraform -chdir=deploy init
 
-remote-deploy: deploy/.terraform
+remote-deploy: deploy/.terraform $(BASE_LAYER_DIR)/base_layer.zip $(HELPER_LAYER_DIR)/helper_layer.zip
 	@terraform -chdir=deploy apply -auto-approve
 
 remote-destroy: deploy/.terraform
 	@terraform -chdir=deploy destroy -auto-approve
 
 deploy:
-	uv run --no-dev --directory=src gunicorn \
+	uv run --no-dev --directory=bingomaker gunicorn \
 	--daemon --bind $(DEPLOY_BIND) \
 	--workers $(DEPLOY_WORKERS) \
 	--log-syslog \
@@ -43,8 +48,33 @@ test-all:
 	@uv run pytest
 	@docker compose down
 
+# Lambdas
+
+$(BASE_LAYER_DIR):
+	mkdir -p $@
+
+$(BASE_LAYER_DIR)/base_layer.zip: $(BASE_LAYER_DIR)/python
+	@echo "------Base Layer------"
+	@echo "Uncompressed layer size: $$(du -hd 0 $<)"
+	@uv run scripts/lambda_zipper.py $@ $<
+	@echo "Compressed layer size: $$(du -h $@)"
+
+$(BASE_LAYER_DIR)/python: $(BASE_LAYER_DIR)/requirements.txt bingomaker
+	uv pip install -r $< --target $@
+	cp -r $(word 2, $^) $@
+
+$(BASE_LAYER_DIR)/requirements.txt: pyproject.toml uv.lock | $(BASE_LAYER_DIR)
+	uv export --only-group lambda -o $@
+
+$(HELPER_LAYER_DIR)/helper_layer.zip: $(HELPER_LAYER_DIR)/python
+	@echo "------Helper Layer------"
+	@echo "Uncompressed layer size: $$(du -hd 0 $<)"
+	@uv run scripts/lambda_zipper.py $@ $<
+	@echo "Compressed layer size: $$(du -h $@)"
+
 clean:
 	uv run ruff clean
+	rm -rf lambdas/*.zip $(BASE_LAYER_DIR) $(HELPER_LAYER_DIR)/helper_layer.zip
 
 .PHONY: pres
 pres: presentation/presentation.html
@@ -68,4 +98,7 @@ info:
 		"deploy   - deploy application using gunicorn" \
 		"remote-deploy  - deploy application using terraform" \
 		"remote-destroy - destroy application using terraform" \
-		"pres     - render the presentation"
+		"pres     - render the presentation" \
+		"remote-deploy - deploy application using terraform" \
+		"remote-destroy - destroy application using terraform" \
+		"lambdas   - build all lambda layers and functions"

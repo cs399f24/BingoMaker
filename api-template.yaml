@@ -56,7 +56,11 @@ paths:
                   $ref: '#/components/schemas/TilePool'
       tags:
         - Tile Pools
-
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${tilepools-get-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
     post:
       summary: Create a new tile pool
       description: Add a new tile pool by specifying a list of text/image tiles.
@@ -78,6 +82,11 @@ paths:
           description: Invalid input provided
       tags:
         - Tile Pools
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${tilepools-post-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
 
   /tilepools/{tilepoolId}:
     get:
@@ -101,6 +110,11 @@ paths:
           description: Tile pool not found
       tags:
         - Tile Pools
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${tilepool-get-by-id-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
 
     patch:
       summary: Update a tile pool (add or remove tiles)
@@ -132,6 +146,11 @@ paths:
           description: Invalid input provided
       tags:
         - Tile Pools
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${tilepool-patch-by-id-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
 
     delete:
       summary: Delete a tile pool
@@ -150,6 +169,11 @@ paths:
           description: Tile pool not found
       tags:
         - Tile Pools
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${tilepool-delete-by-id-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
 
   /bingocard/{tilepoolId}:
     get:
@@ -188,6 +212,12 @@ paths:
           description: Invalid input or request parameters
       tags:
         - Bingo Cards
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${bingocard-get-by-id-function-arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
+
   /images:
     post:
       summary: Upload an image or gif
@@ -238,6 +268,15 @@ paths:
           description: Image could not be uploaded
       tags:
         - Images
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "mock"
   /images/{image_id}:
     get:
       summary: Get an image
@@ -264,6 +303,15 @@ paths:
           description: Image not found
       tags:
         - Images
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        responses:
+          default:
+            statusCode: "202"
+        passthroughBehavior: "when_no_templates"
+        type: "mock"
   /images/{image_id}/confirm:
     post:
       summary: Confirm an image
@@ -286,6 +334,15 @@ paths:
           description: Image not found
       tags:
         - Images
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "mock"
   /images/{image_id}/unconfirm:
     post:
       summary: Unconfirm an Image
@@ -308,6 +365,16 @@ paths:
           description: Image not found
       tags:
         - Images
+      x-amazon-apigateway-integration:
+        credentials: ${lab-role-arn}
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "mock"
+
 
 
 components:
