@@ -28,15 +28,7 @@ Yousuf
 :::
 
 # System Architecture
-
-## Monolithic
-
-::: notes
-Yousuf
-
-:::
-
-## Distributed
+## 
 
 ![](SystemArchetecture.png)
 
